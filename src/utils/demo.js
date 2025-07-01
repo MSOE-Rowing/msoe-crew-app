@@ -11,10 +11,10 @@ export async function addDemoData() {
     }
 
     // Add demo users
-    const user1Id = await db.addUser('Alex River');
-    const user2Id = await db.addUser('Jordan Stroke');
-    const user3Id = await db.addUser('Sam Waters');
-    const user4Id = await db.addUser('Casey Row');
+    const user1Id = await db.addUser('Alex River', 'Crushing it! 💪');
+    const user2Id = await db.addUser('Jordan Stroke', 'Feeling strong today 🔥');
+    const user3Id = await db.addUser('Sam Waters', 'Ready for the 2K 🚣‍♀️');
+    const user4Id = await db.addUser('Casey Row', 'Training hard! ⚡');
 
     // Add demo sessions
     const now = new Date();

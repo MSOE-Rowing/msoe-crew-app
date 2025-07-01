@@ -1,43 +1,21 @@
 <script>
   import { onMount } from 'svelte';
-  import { leaderboard, isLoading, refreshLeaderboard } from '../utils/store.js';
+  import { leaderboard, isLoading, refreshLeaderboard, currentUser } from '../utils/store.js';
   import * as Card from '$lib/components/ui/card';
   import * as Badge from '$lib/components/ui/badge';
   import * as Button from '$lib/components/ui/button';
   import { Separator } from '$lib/components/ui/separator';
+  import ProfileCard from './ProfileCard.svelte';
 
   let leaderboardData = [];
   let loading = false;
+  let selectedUser = null;
 
   onMount(() => refreshLeaderboard());
 
   leaderboard.subscribe(value => leaderboardData = value);
   isLoading.subscribe(value => loading = value);
-
-  function formatMeters(meters) {
-    if (meters >= 1000) {
-      return `${(meters / 1000).toFixed(1)}k`;
-    }
-    return meters.toString();
-  }
-
-  function getRankEmoji(rank) {
-    switch(rank) {
-      case 1: return '🥇';
-      case 2: return '🥈'; 
-      case 3: return '🥉';
-      default: return `#${rank}`;
-    }
-  }
-
-  function getRankVariant(rank) {
-    switch(rank) {
-      case 1: return 'default';
-      case 2: return 'secondary';
-      case 3: return 'outline';
-      default: return 'outline';
-    }
-  }
+  currentUser.subscribe(value => selectedUser = value);
 </script>
 
 <Card.Root class="max-w-4xl mx-auto">
@@ -45,7 +23,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <Card.Title class="text-2xl">Season Leaderboard</Card.Title>
-        <Badge.Badge variant="outline" class="text-xs">
+        <Badge.Badge variant="secondary" class="text-xs">
           DAY BY DAY!
         </Badge.Badge>
       </div>
@@ -72,23 +50,12 @@
     {:else}
       <div class="space-y-3">
         {#each leaderboardData as user, index}
-          <div class="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-            <div class="flex items-center justify-center w-12">
-              <Badge.Badge variant={getRankVariant(user.rank)} class="text-sm font-bold">
-                {getRankEmoji(user.rank)}
-              </Badge.Badge>
-            </div>
-            
-            <div class="flex-1">
-              <div class="font-semibold text-lg">{user.name}</div>
-              <div class="text-sm text-muted-foreground">{formatMeters(user.totalMeters)} meters total</div>
-            </div>
-            
-            <div class="text-right">
-              <div class="text-xl font-bold text-primary">{user.totalMeters.toLocaleString()}</div>
-              <div class="text-sm text-muted-foreground">meters</div>
-            </div>
-          </div>
+          <ProfileCard 
+            {user} 
+            variant="leaderboard" 
+            rank={user.rank}
+            isCurrentUser={selectedUser && selectedUser.id === user.id}
+          />
           
           {#if index < leaderboardData.length - 1}
             <Separator />

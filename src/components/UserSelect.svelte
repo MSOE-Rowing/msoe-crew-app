@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { users, refreshUsers, setCurrentUser } from '../utils/store.js';
   import * as Card from '$lib/components/ui/card';
-  import * as Button from '$lib/components/ui/button';
+  import ProfileCard from './ProfileCard.svelte';
 
   export let onUserSelected = () => {};
 
@@ -31,19 +31,11 @@
     {:else}
       <div class="grid gap-3">
         {#each usersList as user}
-          <Button.Button 
-            variant="outline" 
-            class="flex items-center gap-3 p-4 h-auto text-left justify-start hover:bg-accent"
-            onclick={() => selectUser(user)}
-          >
-            <div class="text-2xl">🚣</div>
-            <div class="flex-1">
-              <div class="font-semibold">{user.name}</div>
-              <div class="text-sm text-muted-foreground">
-                {user.totalMeters.toLocaleString()}m total
-              </div>
-            </div>
-          </Button.Button>
+          <ProfileCard 
+            {user} 
+            variant="select" 
+            onUserSelect={selectUser}
+          />
         {/each}
       </div>
     {/if}

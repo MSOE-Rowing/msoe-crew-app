@@ -11,21 +11,31 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,svg}']
       },
-      includeAssets: ['icon512.png'],
+      includeAssets: ['src/assets/MSOE_logo.svg', 'src/assets/raiders_logo.svg'],
       manifest: {
-        name: 'Rowing Team Companion',
-        short_name: 'Rowing App',
-        description: 'Track meters rowed and view team leaderboards',
+        name: 'MSOE Rowing Team Companion',
+        short_name: 'MSOE Rowing',
+        description: 'Track meters rowed and view team leaderboards for MSOE Rowing',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
-            src: 'icon512.png',
-            sizes: '512x512',
-            type: 'image/png'
+            src: '/src/assets/MSOE_logo.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/src/assets/MSOE_logo.svg',
+            sizes: '512x512', 
+            type: 'image/svg+xml',
+            purpose: 'any'
           }
         ]
       }

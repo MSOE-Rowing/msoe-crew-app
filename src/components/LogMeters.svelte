@@ -1,9 +1,11 @@
 <script>
   import { currentUser, logMeters } from '../utils/store.js';
+  import { currentView } from '../utils/navigation.js';
   import * as Card from '$lib/components/ui/card';
   import * as Button from '$lib/components/ui/button';
   import * as Badge from '$lib/components/ui/badge';
   import { Input } from '$lib/components/ui/input';
+  import ProfileCard from './ProfileCard.svelte';
 
   let selectedUser = null;
   let metersInput = '';
@@ -54,6 +56,11 @@
   function setPreset(meters) {
     metersInput = meters.toString();
   }
+
+  function handleLogout() {
+    currentUser.set(null);
+    currentView.set('profile');
+  }
 </script>
 
 <div class="container mx-auto p-4 max-w-2xl">
@@ -82,14 +89,11 @@
     {/if}
 
     <div class="space-y-6">
-      <Card.Card>
-        <Card.Header>
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🚣</span>
-            <span class="font-semibold text-lg">{selectedUser.name}</span>
-          </div>
-        </Card.Header>
-      </Card.Card>
+      <ProfileCard 
+        user={selectedUser} 
+        variant="log" 
+        onLogout={handleLogout}
+      />
 
       <Card.Card>
         <Card.Header>

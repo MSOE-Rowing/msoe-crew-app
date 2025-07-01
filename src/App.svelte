@@ -4,6 +4,9 @@
   import Leaderboard from './components/Leaderboard.svelte';
   import LogMeters from './components/LogMeters.svelte';
   import Profile from './components/Profile.svelte';
+  import PWAInstall from './components/PWAInstall.svelte';
+  import OnlineStatus from './components/OnlineStatus.svelte';
+  import UpdatePrompt from './components/UpdatePrompt.svelte';
   import { initializeApp, isLoading } from './utils/store.js';
   import { currentView } from './utils/navigation.js';
   import * as Tabs from '$lib/components/ui/tabs';
@@ -22,6 +25,8 @@
 </script>
 
 <div class="min-h-screen bg-background">
+  <OnlineStatus />
+  
   <header class="border-b bg-card shadow-sm">
     <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
@@ -44,11 +49,13 @@
           <img src="/src/assets/MSOE_logo.svg" alt="MSOE Logo" class="h-16 w-auto animate-pulse" />
         </div>
         <div class="text-xl font-semibold mb-2">MSOE Rowing</div>
-        <p class="text-sm">DAY BY DAY!</p>
-        <div class="mt-4 text-sm">Loading...</div>
-      </div>
-    {:else}
-      <Tabs.Root value={view} onValueChange={handleTabChange} class="w-full">
+        <p class="text-sm">DAY BY DAY!</p>      <div class="mt-4 text-sm">Loading...</div>
+    </div>
+  {:else}
+    <PWAInstall />
+    <UpdatePrompt />
+    
+    <Tabs.Root value={view} onValueChange={handleTabChange} class="w-full">
         <Tabs.List class="grid w-full grid-cols-3 mb-6">
           <Tabs.Trigger value="leaderboard" class="flex items-center gap-2">
             🏆 Leaderboard

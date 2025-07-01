@@ -69,9 +69,9 @@ export async function refreshLeaderboard() {
   }
 }
 
-export async function addNewUser(name) {
+export async function addNewUser(name, status = 'Ready to row! 🚣') {
   try {
-    const userId = await db.addUser(name);
+    const userId = await db.addUser(name, status);
     await refreshUsers();
     await refreshLeaderboard();
     return userId;
@@ -88,6 +88,30 @@ export async function logMeters(userId, meters) {
     return true;
   } catch (error) {
     console.error('Failed to log meters:', error);
+    throw error;
+  }
+}
+
+export async function updateUserStatus(userId, status) {
+  try {
+    await db.updateUserStatus(userId, status);
+    await refreshUsers();
+    await refreshLeaderboard();
+    
+    // Update current user if it's the one being updated
+    const updatedUsers = await db.getUsers();
+    const updatedUser = updatedUsers.find(u => u.id === userId);
+    
+    currentUser.update(user => {
+      if (user && user.id === userId) {
+        return updatedUser;
+      }
+      return user;
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to update user status:', error);
     throw error;
   }
 }

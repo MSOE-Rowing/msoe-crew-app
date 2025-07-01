@@ -36,12 +36,13 @@ class RowingDB {
     });
   }
 
-  async addUser(name) {
+  async addUser(name, status = 'Ready to row! 🚣') {
     const transaction = this.db.transaction(['users'], 'readwrite');
     const store = transaction.objectStore('users');
     
     const user = {
       name,
+      status,
       createdAt: new Date(),
       totalMeters: 0
     };
@@ -120,6 +121,28 @@ class RowingDB {
         const putRequest = store.put(user);
         putRequest.onsuccess = () => resolve();
         putRequest.onerror = () => reject(putRequest.error);
+      };
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+  }
+
+  async updateUserStatus(userId, status) {
+    const transaction = this.db.transaction(['users'], 'readwrite');
+    const store = transaction.objectStore('users');
+
+    return new Promise((resolve, reject) => {
+      const getRequest = store.get(userId);
+      getRequest.onsuccess = () => {
+        const user = getRequest.result;
+        if (user) {
+          user.status = status;
+          
+          const putRequest = store.put(user);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = () => reject(putRequest.error);
+        } else {
+          reject(new Error('User not found'));
+        }
       };
       getRequest.onerror = () => reject(getRequest.error);
     });

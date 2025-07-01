@@ -2,12 +2,12 @@
   import { onMount } from 'svelte';
   import { currentUser, setCurrentUser } from '../utils/store.js';
   import { db } from '../services/database.js';
-  import * as Card from '$lib/components/ui/card';
-  import * as Button from '$lib/components/ui/button';
+  import * as Card from '$lib/components/ui/card';   import * as Button from '$lib/components/ui/button';
   import * as Badge from '$lib/components/ui/badge';
   import { Separator } from '$lib/components/ui/separator';
   import UserSelect from './UserSelect.svelte';
   import CreateProfile from './CreateProfile.svelte';
+  import ProfileCard from './ProfileCard.svelte';
 
   let user = null;
   let sessions = [];
@@ -66,25 +66,12 @@
 <div class="container mx-auto p-4 max-w-2xl">
   {#if user}
     <div class="space-y-6">
-      <Card.Card>
-        <Card.Header>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="text-4xl">🚣</div>
-              <div>
-                <Card.Title class="text-2xl">{user.name}</Card.Title>
-                <p class="text-primary font-semibold text-lg">
-                  {formatMeters(user.totalMeters)} meters total
-                </p>
-              </div>
-            </div>
-            <Button.Button variant="outline" size="sm" onclick={logout}>
-              <span class="mr-2">🚪</span>
-              Logout
-            </Button.Button>
-          </div>
-        </Card.Header>
-      </Card.Card>
+      <ProfileCard 
+        {user} 
+        variant="profile" 
+        showLogoutButton={true}
+        onLogout={logout}
+      />
 
       <Card.Card>
         <Card.Header>
@@ -127,7 +114,7 @@
             Select your profile or create a new one to get started.
           </Card.Description>
           <div class="mt-2">
-            <Badge.Badge variant="outline" class="text-sm font-semibold">
+            <Badge.Badge variant="secondary" class="text-sm font-semibold">
               DAY BY DAY!
             </Badge.Badge>
           </div>
