@@ -65,7 +65,7 @@
           <div class="text-2xl">📱</div>
           <div>
             <h3 class="font-semibold">Install MSOE Rowing App</h3>
-            <p class="text-sm text-muted-foreground">Add to your home screen for quick access</p>
+            <p class="text-sm text-muted-foreground">Add to your home screen for quick access and stay logged in</p>
           </div>
         </div>
         <div class="flex gap-2">

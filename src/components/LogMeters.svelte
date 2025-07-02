@@ -10,7 +10,10 @@
   let selectedUser = null;
   let metersInput = '';
   let isSubmitting = false;
+  
+  // Success message state
   let successMessage = '';
+  let showSuccess = false;
 
   const presets = [
     { label: '2K', meters: 2000 },
@@ -34,17 +37,21 @@
       isSubmitting = true;
       await logMeters(selectedUser.id, meters);
       
-      successMessage = `Successfully logged ${meters} meters!`;
-      setTimeout(() => {
-        successMessage = '';
-      }, 3000);
-
+      showSuccessMessage(`Successfully logged ${meters.toLocaleString()} meters!`);
       metersInput = '';
     } catch (error) {
       alert('Failed to log meters. Please try again.');
     } finally {
       isSubmitting = false;
     }
+  }
+  
+  function showSuccessMessage(message) {
+    successMessage = message;
+    showSuccess = true;
+    setTimeout(() => {
+      showSuccess = false;
+    }, 3000);
   }
 
   function handleKeypress(event) {
@@ -56,14 +63,17 @@
   function setPreset(meters) {
     metersInput = meters.toString();
   }
-
-  function handleLogout() {
-    currentUser.set(null);
-    currentView.set('profile');
-  }
 </script>
 
 <div class="container mx-auto p-4 max-w-2xl">
+  <!-- Success notification -->
+  {#if showSuccess}
+    <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
+      <span class="text-sm">✅</span>
+      <span class="text-sm font-medium">{successMessage}</span>
+    </div>
+  {/if}
+
   <h2 class="text-3xl font-bold text-center mb-6">Log Meters</h2>
 
   {#if !selectedUser}
@@ -82,17 +92,10 @@
       </Card.Header>
     </Card.Card>
   {:else}
-    {#if successMessage}
-      <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-        ✅ {successMessage}
-      </div>
-    {/if}
-
     <div class="space-y-6">
       <ProfileCard 
         user={selectedUser} 
         variant="log" 
-        onLogout={handleLogout}
       />
 
       <Card.Card>

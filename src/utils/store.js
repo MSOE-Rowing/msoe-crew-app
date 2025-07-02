@@ -1,8 +1,15 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { db } from '../services/database.js';
+import { authService } from '../services/auth.js';
 import { addDemoData } from './demo.js';
+import { isAdmin } from '../config/admin.js';
 
-// Current user store
+// Authentication state
+export const authUser = writable(null);
+export const isAuthenticated = writable(false);
+export const isAdminUser = writable(false);
+
+// Current user profile store
 export const currentUser = writable(null);
 
 // Users store
@@ -16,6 +23,71 @@ export const leaderboard = writable([]);
 
 // Loading states
 export const isLoading = writable(false);
+export const authLoading = writable(true);
+
+// Email verification error state
+export const emailVerificationError = writable(false);
+
+// Initialize authentication listener
+export function initializeAuth() {
+  console.log('🔐 Initializing auth state listener...');
+  
+  return authService.onAuthStateChanged(async (user) => {
+    console.log('🔄 Auth state changed, processing...', user ? `User: ${user.email}` : 'No user');
+    authLoading.set(true);
+    
+    if (user) {
+      console.log('Auth state changed:', {
+        uid: user.uid,
+        email: user.email,
+        emailVerified: user.emailVerified
+      });
+      
+      // TEMPORARY: Skip email verification check for development
+      // TODO: Re-enable email verification in production
+      const skipVerification = false; // Set to false to test email verification
+      
+      // Check if email is verified (unless bypassed for development)
+      if (!skipVerification && !user.emailVerified) {
+        console.log('User email not verified, signing out and setting error flag');
+        emailVerificationError.set(true);
+        await authService.signOut();
+        authLoading.set(false);
+        return;
+      }
+      
+      // Clear any previous email verification error
+      emailVerificationError.set(false);
+      
+      // User is signed in and verified (or verification bypassed)
+      authUser.set(user);
+      isAuthenticated.set(true);
+      isAdminUser.set(isAdmin(user.uid));
+      
+      // Try to get user profile from Firestore
+      try {
+        const userProfile = await db.getUserByAuthUid(user.uid);
+        if (userProfile) {
+          currentUser.set(userProfile);
+        } else {
+          // User doesn't have a profile yet, will need to create one
+          currentUser.set(null);
+        }
+      } catch (error) {
+        console.error('Failed to get user profile:', error);
+        currentUser.set(null);
+      }
+    } else {
+      // User is signed out
+      authUser.set(null);
+      isAuthenticated.set(false);
+      isAdminUser.set(false);
+      currentUser.set(null);
+    }
+    
+    authLoading.set(false);
+  });
+}
 
 // Initialize the database and load initial data
 export async function initializeApp() {
@@ -27,16 +99,6 @@ export async function initializeApp() {
     await refreshLeaderboard();
     await refreshUsers();
     
-    // Load current user from localStorage if exists
-    const savedUserId = localStorage.getItem('currentUserId');
-    if (savedUserId) {
-      const allUsers = await db.getUsers();
-      const user = allUsers.find(u => u.id === parseInt(savedUserId));
-      if (user) {
-        currentUser.set(user);
-      }
-    }
-
     // Add demo data if no users exist
     const allUsers = await db.getUsers();
     if (allUsers.length === 0) {
@@ -46,6 +108,7 @@ export async function initializeApp() {
     }
   } catch (error) {
     console.error('Failed to initialize app:', error);
+    // Don't throw the error, let the app continue to work in auth mode
   } finally {
     isLoading.set(false);
   }
@@ -69,11 +132,20 @@ export async function refreshLeaderboard() {
   }
 }
 
-export async function addNewUser(name, status = 'Ready to row! 🚣') {
+export async function addNewUser(name, status = 'Ready to row! 🚣', authUid = null) {
   try {
-    const userId = await db.addUser(name, status);
+    const userId = await db.addUser(name, status, authUid);
     await refreshUsers();
     await refreshLeaderboard();
+    
+    // If this is for the current authenticated user, update the current user
+    if (authUid) {
+      const newUser = await db.getUserByAuthUid(authUid);
+      if (newUser) {
+        currentUser.set(newUser);
+      }
+    }
+    
     return userId;
   } catch (error) {
     console.error('Failed to add user:', error);
@@ -83,11 +155,58 @@ export async function addNewUser(name, status = 'Ready to row! 🚣') {
 
 export async function logMeters(userId, meters) {
   try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    if (!meters || meters <= 0) {
+      throw new Error('Meters must be a positive number');
+    }
+    
     await db.addSession(userId, meters);
     await refreshLeaderboard();
+    await refreshUsers();
+    
+    // Update the current user with fresh data if it's the user who logged meters
+    currentUser.update(user => {
+      if (user && user.id === userId) {
+        // Find the updated user from the refreshed users list
+        const allUsers = get(users);
+        const updatedUser = allUsers.find(u => u.id === userId);
+        return updatedUser || user;
+      }
+      return user;
+    });
+    
     return true;
   } catch (error) {
     console.error('Failed to log meters:', error);
+    throw error;
+  }
+}
+
+export async function deleteSession(sessionId) {
+  try {
+    await db.deleteSession(sessionId);
+    await refreshLeaderboard();
+    await refreshUsers();
+    
+    // Update the current user with fresh data
+    const currentUserId = get(currentUser)?.id;
+    if (currentUserId) {
+      currentUser.update(user => {
+        if (user) {
+          const allUsers = get(users);
+          const updatedUser = allUsers.find(u => u.id === currentUserId);
+          return updatedUser || user;
+        }
+        return user;
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to delete session:', error);
     throw error;
   }
 }
@@ -118,9 +237,15 @@ export async function updateUserStatus(userId, status) {
 
 export function setCurrentUser(user) {
   currentUser.set(user);
-  if (user) {
-    localStorage.setItem('currentUserId', user.id.toString());
-  } else {
-    localStorage.removeItem('currentUserId');
+}
+
+// Sign out function
+export async function signOut() {
+  try {
+    await authService.signOut();
+    // Auth state will be updated automatically by the listener
+  } catch (error) {
+    console.error('Failed to sign out:', error);
+    throw error;
   }
 }

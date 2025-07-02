@@ -1,31 +1,37 @@
 <script>
-  import { addNewUser, setCurrentUser } from '../utils/store.js';
-  import { db } from '../services/database.js';
+  import { addNewUser } from '../utils/store.js';
+  import { authUser } from '../utils/store.js';
+  import { get } from 'svelte/store';
   import * as Card from '$lib/components/ui/card';
-  import * as Button from '$lib/components/ui/button';
+  import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
 
-  export let onUserCreated = () => {};
-  export let onCancel = () => {};
+  // Callback props to replace createEventDispatcher
+  export let onProfileCreated = () => {};
 
   let newUserName = '';
   let isAddingUser = false;
+  let error = '';
 
-  async function addUser() {
+  async function createProfile() {
     if (!newUserName.trim() || isAddingUser) return;
+
+    const auth = get(authUser);
+    if (!auth) {
+      error = 'Authentication required';
+      return;
+    }
 
     try {
       isAddingUser = true;
-      const userId = await addNewUser(newUserName.trim());
+      error = '';
       
-      const users = await db.getUsers();
-      const newUser = users.find(u => u.id === userId);
-      setCurrentUser(newUser);
+      const userId = await addNewUser(newUserName.trim(), 'Ready to row! 🚣', auth.uid);
       
-      newUserName = '';
-      onUserCreated(newUser);
+      onProfileCreated();
     } catch (error) {
-      alert('Failed to add user. Please try again.');
+      console.error('Failed to create profile:', error);
+      error = 'Failed to create profile. Please try again.';
     } finally {
       isAddingUser = false;
     }
@@ -33,53 +39,65 @@
 
   function handleKeypress(event) {
     if (event.key === 'Enter') {
-      addUser();
+      createProfile();
     }
-  }
-
-  function handleCancel() {
-    newUserName = '';
-    onCancel();
   }
 </script>
 
-<Card.Card>
-  <Card.Header>
-    <Card.Title>Create Your Profile</Card.Title>
-    <Card.Description>Enter your name to create a new profile</Card.Description>
-  </Card.Header>
-  <Card.Content class="space-y-4">
-    <div class="space-y-2">
-      <label for="name" class="text-sm font-medium">Your Name</label>
-      <Input
-        id="name"
-        type="text"
-        bind:value={newUserName}
-        on:keypress={handleKeypress}
-        placeholder="Enter your name..."
-        maxlength="50"
-        disabled={isAddingUser}
-      />
+<div class="min-h-screen bg-background flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="flex items-center justify-center gap-3 mb-4">
+        <img src="/MSOE_logo.svg" alt="MSOE Logo" class="h-12 w-auto" />
+        <img src="/raiders_logo.svg" alt="Raiders Logo" class="h-12 w-auto" />
+      </div>
+      <h1 class="text-2xl font-bold text-foreground">MSOE Rowing</h1>
+      <p class="text-muted-foreground font-medium">DAY BY DAY!</p>
     </div>
-    <div class="flex gap-2">
-      <Button.Button 
-        class="flex-1"
-        onclick={addUser}
-        disabled={!newUserName.trim() || isAddingUser}
-      >
-        {#if isAddingUser}
-          Creating...
-        {:else}
-          Create Profile
+
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Create Your Profile</Card.Title>
+        <Card.Description>Enter your name to start tracking your rowing progress</Card.Description>
+      </Card.Header>
+      <Card.Content class="space-y-4">
+        <div class="space-y-2">
+          <label for="name" class="text-sm font-medium">Your Name</label>
+          <Input
+            id="name"
+            type="text"
+            bind:value={newUserName}
+            on:keypress={handleKeypress}
+            placeholder="Enter your name..."
+            maxlength="50"
+            disabled={isAddingUser}
+          />
+        </div>
+
+        {#if error}
+          <div class="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+            {error}
+          </div>
         {/if}
-      </Button.Button>
-      <Button.Button 
-        variant="outline"
-        onclick={handleCancel}
-        disabled={isAddingUser}
-      >
-        Cancel
-      </Button.Button>
+
+        <Button 
+          class="w-full"
+          onclick={createProfile}
+          disabled={!newUserName.trim() || isAddingUser}
+        >
+          {#if isAddingUser}
+            Creating Profile...
+          {:else}
+            Create Profile
+          {/if}
+        </Button>
+      </Card.Content>
+    </Card.Root>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 text-sm text-muted-foreground">
+      <p>Welcome to the MSOE Rowing Team!</p>
     </div>
-  </Card.Content>
-</Card.Card>
+  </div>
+</div>

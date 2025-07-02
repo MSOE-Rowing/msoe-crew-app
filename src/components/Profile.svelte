@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { currentUser, setCurrentUser } from '../utils/store.js';
+  import { currentUser, setCurrentUser, deleteSession } from '../utils/store.js';
   import { db } from '../services/database.js';
   import * as Card from '$lib/components/ui/card';   import * as Button from '$lib/components/ui/button';
   import * as Badge from '$lib/components/ui/badge';
@@ -12,6 +12,13 @@
   let user = null;
   let sessions = [];
   let showCreateProfile = false;
+  
+  // Delete workout state
+  let deletingSessionId = null;
+  
+  // Success message state
+  let successMessage = '';
+  let showSuccess = false;
 
   currentUser.subscribe(value => {
     user = value;
@@ -22,14 +29,21 @@
     if (!user) return;
     try {
       sessions = await db.getSessions(user.id);
-      sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+      sessions.sort((a, b) => {
+        // Handle Firestore Timestamp objects properly
+        const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+        const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+        return dateB - dateA;
+      });
     } catch (error) {
       console.error('Failed to load sessions:', error);
     }
   }
 
   function formatDate(date) {
-    return new Date(date).toLocaleDateString('en-US', {
+    // Handle Firestore Timestamp objects
+    const jsDate = date?.toDate ? date.toDate() : new Date(date);
+    return jsDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -38,11 +52,6 @@
 
   function formatMeters(meters) {
     return meters.toLocaleString();
-  }
-
-  function logout() {
-    setCurrentUser(null);
-    showCreateProfile = false;
   }
 
   function handleUserSelected(selectedUser) {
@@ -61,16 +70,50 @@
   function showCreateForm() {
     showCreateProfile = true;
   }
+
+  async function handleDeleteSession(sessionId) {
+    if (confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+      try {
+        deletingSessionId = sessionId;
+        await deleteSession(sessionId);
+        
+        // Update local state immediately for smoother UX
+        sessions = sessions.filter(session => session.id !== sessionId);
+        
+        // Show success notification
+        showSuccessMessage('Session deleted successfully');
+      } catch (error) {
+        console.error('Failed to delete session:', error);
+        alert('Failed to delete session. Please try again.');
+      } finally {
+        deletingSessionId = null;
+      }
+    }
+  }
+  
+  function showSuccessMessage(message) {
+    successMessage = message;
+    showSuccess = true;
+    setTimeout(() => {
+      showSuccess = false;
+    }, 3000);
+  }
 </script>
 
 <div class="container mx-auto p-4 max-w-2xl">
+  <!-- Success notification -->
+  {#if showSuccess}
+    <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
+      <span class="text-sm">✅</span>
+      <span class="text-sm font-medium">{successMessage}</span>
+    </div>
+  {/if}
+
   {#if user}
     <div class="space-y-6">
       <ProfileCard 
         {user} 
         variant="profile" 
-        showLogoutButton={true}
-        onLogout={logout}
       />
 
       <Card.Card>
@@ -92,8 +135,21 @@
                     </Badge.Badge>
                     <span class="font-medium">{formatDate(session.date)}</span>
                   </div>
-                  <div class="text-right">
+                  <div class="flex items-center gap-3">
                     <span class="font-semibold text-primary">{formatMeters(session.meters)}m</span>
+                    <Button.Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onclick={() => handleDeleteSession(session.id)}
+                      disabled={deletingSessionId === session.id}
+                      class="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
+                    >
+                      {#if deletingSessionId === session.id}
+                        <span class="animate-spin text-xs">⏳</span>
+                      {:else}
+                        🗑️
+                      {/if}
+                    </Button.Button>
                   </div>
                 </div>
                 {#if index < Math.min(sessions.length, 10) - 1}

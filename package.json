@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "update-admin": "node scripts/update-admin-rules.js",
+    "deploy:rules": "npm run update-admin && firebase deploy --only firestore:rules"
   },
   "keywords": [
     "rowing",
@@ -37,6 +41,7 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "firebase": "^11.10.0",
     "lucide-svelte": "^0.525.0",
     "tailwind-merge": "^3.3.1"
   }

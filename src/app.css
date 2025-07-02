@@ -119,3 +119,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom styles for flexible tab layout */
+@layer components {
+  /* Override default tab trigger styling since we're handling background manually */
+  [data-slot="tabs-trigger"] {
+    background-color: transparent !important;
+    border-radius: 0.375rem !important;
+  }
+  
+  [data-slot="tabs-trigger"]:not([data-state="active"]) {
+    color: inherit !important;
+  }
+}

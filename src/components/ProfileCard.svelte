@@ -10,8 +10,6 @@
   export let variant = 'profile'; // 'leaderboard', 'profile', 'log', 'select'
   export let rank = null;
   export let onUserSelect = () => {};
-  export let onLogout = () => {};
-  export let showLogoutButton = false;
   export let isCurrentUser = false; // Highlight if this is the current user
 
   // Status editing state
@@ -61,7 +59,6 @@
       showMeters: true,
       clickable: false,
       allowStatusEdit: true,
-      showLogoutButton: true,
     }
   };
 
@@ -137,7 +134,6 @@
   $: userNameDisplay = user.name;
   $: userStatus = user.status || 'Ready to row! 🚣';
   $: shouldShowMeters = currentConfig.showMeters && user.totalMeters;
-  $: shouldShowLogout = showLogoutButton;
 </script>
 
 <!-- Unified content component -->
@@ -185,15 +181,6 @@
   </div>
 {/snippet}
 
-{#snippet logoutButton()}
-  {#if shouldShowLogout}
-    <Button.Button variant="outline" size="sm" onclick={onLogout}>
-      <span class="mr-{variant === 'profile' ? '2' : '1'}">🚪</span>
-      Logout
-    </Button.Button>
-  {/if}
-{/snippet}
-
 <!-- Main structure -->
 {#if currentConfig.isButton}
   <Button.Button variant="outline" class={currentConfig.container} onclick={handleClick}>
@@ -202,11 +189,8 @@
 {:else if currentConfig.isCard}
   <Card.Card>
     <Card.Header>
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          {@render userContent()}
-        </div>
-        {@render logoutButton()}
+      <div class="flex items-center gap-3">
+        {@render userContent()}
       </div>
     </Card.Header>
   </Card.Card>

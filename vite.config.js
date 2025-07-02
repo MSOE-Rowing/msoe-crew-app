@@ -11,9 +11,34 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg}']
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webp}'],
+        // Cache Firebase auth and app shell
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/identitytoolkit\.googleapis\.com/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'firebase-auth-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/firestore\.googleapis\.com/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'firestore-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 // 1 day
+              }
+            }
+          }
+        ]
       },
-      includeAssets: ['src/assets/MSOE_logo.svg', 'src/assets/raiders_logo.svg'],
+      includeAssets: ['MSOE_logo.svg', 'raiders_logo.svg'],
       manifest: {
         name: 'MSOE Rowing Team Companion',
         short_name: 'MSOE Rowing',
@@ -26,13 +51,13 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
-            src: '/src/assets/MSOE_logo.svg',
+            src: 'MSOE_logo.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
             purpose: 'any'
           },
           {
-            src: '/src/assets/MSOE_logo.svg',
+            src: 'MSOE_logo.svg',
             sizes: '512x512', 
             type: 'image/svg+xml',
             purpose: 'any'
