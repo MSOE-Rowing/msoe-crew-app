@@ -4,7 +4,8 @@ service cloud.firestore {
     // Function to check if user is admin
     function isAdmin() {
       return request.auth != null && request.auth.uid in [
-                '0CHyV5tueMWepL0jwzmEQpywvOr2'
+                '0CHyV5tueMWepL0jwzmEQpywvOr2',
+        'QxuEp0xPVVMZ3Jtao36FzVeAV4E3'
       ];
     }
     

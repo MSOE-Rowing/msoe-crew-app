@@ -4,7 +4,8 @@
 
 // Add admin user UIDs here
 export const ADMIN_UIDS = [
-  '0CHyV5tueMWepL0jwzmEQpywvOr2', // Your UID
+  '0CHyV5tueMWepL0jwzmEQpywvOr2',
+  'QxuEp0xPVVMZ3Jtao36FzVeAV4E3'
   // Add more admin UIDs here as needed
 ];
 
