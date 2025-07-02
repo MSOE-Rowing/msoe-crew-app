@@ -1,7 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { db } from '../services/database.js';
 import { authService } from '../services/auth.js';
-import { addDemoData } from './demo.js';
 import { isAdmin } from '../config/admin.js';
 
 // Authentication state
@@ -99,13 +98,6 @@ export async function initializeApp() {
     await refreshLeaderboard();
     await refreshUsers();
     
-    // Add demo data if no users exist
-    const allUsers = await db.getUsers();
-    if (allUsers.length === 0) {
-      await addDemoData();
-      await refreshUsers();
-      await refreshLeaderboard();
-    }
   } catch (error) {
     console.error('Failed to initialize app:', error);
     // Don't throw the error, let the app continue to work in auth mode
