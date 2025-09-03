@@ -6,6 +6,7 @@
   import * as HoverCard from '$lib/components/ui/hover-card';
   import { Button, Root } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
+  import { NotificationToast } from '$lib/components/ui/notification-toast';
 
   // Callback props to replace createEventDispatcher
   export let onAuthSuccess = () => {};
@@ -251,29 +252,9 @@
 </script>
 
 <div class="min-h-screen bg-background flex items-center justify-center p-4">
-  <!-- Success notification -->
-  {#if showSuccess}
-    <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
-      <span class="text-sm">✅</span>
-      <span class="text-sm font-medium">{successMessage}</span>
-    </div>
-  {/if}
-  
-  <!-- Warning notification -->
-  {#if showWarning}
-    <div class="fixed top-4 right-4 z-50 bg-amber-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
-      <span class="text-sm">⚠️</span>
-      <span class="text-sm font-medium">{warningMessage}</span>
-    </div>
-  {/if}
-  
-  <!-- Error notification -->
-  {#if showError}
-    <div class="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
-      <span class="text-sm">❌</span>
-      <span class="text-sm font-medium">{errorMessage}</span>
-    </div>
-  {/if}
+  <NotificationToast show={showSuccess} message={successMessage} variant="success" />
+  <NotificationToast show={showWarning} message={warningMessage} variant="warning" />
+  <NotificationToast show={showError} message={errorMessage} variant="error" />
 
   <div class="w-full max-w-md">
     <!-- Header -->

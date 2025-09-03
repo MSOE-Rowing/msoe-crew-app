@@ -6,6 +6,7 @@
   import * as Badge from '$lib/components/ui/badge';
   import { Input } from '$lib/components/ui/input';
   import ProfileCard from './ProfileCard.svelte';
+  import { NotificationToast } from '$lib/components/ui/notification-toast';
 
   let selectedUser = null;
   let metersInput = '';
@@ -67,12 +68,7 @@
 
 <div class="container mx-auto p-4 max-w-2xl">
   <!-- Success notification -->
-  {#if showSuccess}
-    <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
-      <span class="text-sm">✅</span>
-      <span class="text-sm font-medium">{successMessage}</span>
-    </div>
-  {/if}
+  <NotificationToast show={showSuccess} message={successMessage} variant="success" />
 
   <h2 class="text-3xl font-bold text-center mb-6">Log Meters</h2>
 

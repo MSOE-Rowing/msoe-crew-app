@@ -144,7 +144,8 @@
       {#if loading}
         <div class="flex flex-col items-center justify-center min-h-[50vh] text-muted-foreground">
           <div class="mb-6">
-            <img src="/src/assets/MSOE_logo.svg" alt="MSOE Logo" class="h-16 w-auto animate-pulse" />
+            <!-- Use public root asset path instead of src/ path for production correctness -->
+            <img src="/MSOE_logo.svg" alt="MSOE Logo" class="h-16 w-auto animate-pulse" />
           </div>
           <div class="text-xl font-semibold mb-2">MSOE Rowing</div>
           <p class="text-sm">DAY BY DAY!</p>

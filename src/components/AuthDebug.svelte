@@ -1,6 +1,7 @@
 <script>
   import { isAuthenticated, authLoading, currentUser } from '../utils/store.js';
   import { authService } from '../services/auth.js';
+  import { Button } from '$lib/components/ui/button';
   
   let showDebug = false;
   
@@ -22,12 +23,7 @@
 <!-- Debug toggle button (only in development) -->
 {#if import.meta.env.DEV}
   <div class="fixed bottom-4 left-4 z-50">
-    <button 
-      class="bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-50 hover:opacity-100"
-      onclick={toggleDebug}
-    >
-      🐛 Auth Debug
-    </button>
+  <Button size="sm" variant="outline" class="text-xs opacity-60 hover:opacity-100 h-7 px-2" onclick={toggleDebug}>🐛 Auth Debug</Button>
     
     {#if showDebug}
       <div class="mt-2 bg-gray-900 text-white p-3 rounded text-xs max-w-xs">
@@ -36,12 +32,7 @@
         <div>Loading: {$authLoading ? '⏳' : '✅'}</div>
         <div>User: {$currentUser?.name || 'None'}</div>
         <div>Email: {$currentUser?.email || 'None'}</div>
-        <button 
-          class="mt-2 bg-blue-600 px-2 py-1 rounded text-xs"
-          onclick={checkAuthState}
-        >
-          Console Log
-        </button>
+  <Button size="sm" class="mt-2 h-7 text-xs px-2" onclick={checkAuthState}>Console Log</Button>
       </div>
     {/if}
   </div>
