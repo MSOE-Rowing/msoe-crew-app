@@ -1,6 +1,7 @@
 {
   "projects": {
-    "staging": "rowing-leaderboard-app"
+    "staging": "rowing-leaderboard-app",
+    "default": "rowing-leaderboard-app"
   },
   "targets": {},
   "etags": {}
